@@ -49,7 +49,7 @@ Dos procesos del mismo código: **web** (gunicorn: webhook + sitio + admin) y **
 | Tareas y agenda | **Django-Q2** con la BD como cola (sin Redis). Tareas asíncronas para procesar mensajes y tareas programadas cada minuto. Si el negocio crece mucho se cambia a Celery |
 | Web / dashboard | Plantillas Django + **HTMX** (filtros sin recargar) + **Tailwind CSS** + **Chart.js** |
 | Carga de datos | **Django Admin** personalizado desde el día 1. Vistas propias donde haga falta |
-| IA | SDK `anthropic`, tool runner (`@beta_tool`), modelo configurable con `CLAUDE_MODEL` (por defecto `claude-opus-5-5`) |
+| IA | SDK `anthropic` con un ciclo de herramientas propio (control de fallbacks, errores y tests), modelo configurable con `ASISTENTE_MODELO` (por defecto `claude-opus-5-5`) |
 | Audio | Interfaz `transcribir(bytes)` con Whisper por API (intercambiable) |
 | BD | PostgreSQL (SQLite en desarrollo). Montos en `Decimal` |
 | Hosting | Railway: servicio web + worker + Postgres (~US$5–10/mes) |
@@ -183,8 +183,8 @@ La IA elige el espacio según el contenido: si menciona un cliente o proyecto �
 ## Estructura del proyecto
 
 ```
-manage.py · pyproject.toml · .env.example · Dockerfile · Procfile (web + worker) · README.md
-config/            settings (base/dev/prod), urls, wsgi
+manage.py · pyproject.toml · .env.example · Procfile (web + worker) · README.md
+config/            settings (variables de entorno) + settings_test, urls, wsgi
 apps/
   cuentas/         Usuario propio, Espacio, Membresia, roles, mixins de permisos
   whatsapp/        webhook (vista), firma, dedupe, cliente (enviar texto/botones/plantilla/media), parser
@@ -209,8 +209,8 @@ Regla: **la lógica vive en `servicios.py` de cada app.** Las vistas web, el adm
 | Fase | Contenido | Resultado usable |
 |---|---|---|
 | **0 – Cuentas** (tú) | Meta for Developers + número de prueba + verificar números · API key de Anthropic · API key de transcripción · Railway | — |
-| **1 – Base + recordatorios** | Proyecto Django, usuario propio, espacios, roles, admin, Django-Q2, webhook, agente con herramientas de recordatorios, avisos con botones, plantilla. Deploy en Railway | Tú agendas por WhatsApp y te llegan los avisos |
-| **2 – Familia** | Papá, asignaciones, lista de la obra, audios, desglose IA, resumen diario, recurrentes | Lo usan los dos |
+| **1 – Base + recordatorios** ✅ código listo | Proyecto Django, usuario propio, espacios, roles, admin, Django-Q2, webhook, agente con herramientas de recordatorios, asignar a otra persona, avisos con botones, plantillas. Deploy en Railway (pendiente: requiere tus cuentas) | Tú agendas por WhatsApp y te llegan los avisos |
+| **2 – Familia** | Papá, lista de la obra, audios, desglose IA, resumen diario, recurrentes | Lo usan los dos |
 | **3 – Negocio: datos** | Clientes, proyectos, fases, cambios, cobros (cuotas, mensualidades, únicos), pagos, gastos. Carga vía admin + WhatsApp. Avisos de cobros y entregas. Empleado con login y "Mis tareas" | Todo el negocio registrado y con avisos |
 | **4 – Dashboard** | KPIs, gráficos mensuales, comparativa 1–4 meses, por cobrar, morosidad, MRR/churn, gastos, margen por proyecto, fichas, calendario, resumen semanal IA | Ves si estás creciendo |
 | **5 – Captación + producción** | Pipeline kanban, origen y conversión por canal, seguimientos automáticos, número propio de WhatsApp, backups, 2FA para tu cuenta, monitoreo de errores | Sistema completo |
@@ -237,7 +237,7 @@ Regla: **la lógica vive en `servicios.py` de cada app.** Las vistas web, el adm
 | Claude `claude-opus-5-5` (3 personas, effort low + caché) | ~US$20–40 |
 | Alternativa `claude-haiku-5-5` | ~US$1–2 |
 
-El modelo se cambia con `CLAUDE_MODEL`; la decisión es tuya.
+El modelo se cambia con `ASISTENTE_MODELO`; la decisión es tuya.
 
 ---
 

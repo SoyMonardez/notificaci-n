@@ -1,0 +1,40 @@
+[project]
+name = "notificacion"
+version = "0.1.0"
+description = "Asistente de agenda y recordatorios por WhatsApp con IA, base del sistema de gestión de Monardez Soft"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.2,<6",
+    "django-q2>=1.11",
+    "anthropic>=1.15",
+    "httpx>=0.28",
+    "python-dateutil>=2.9",
+    "psycopg[binary]>=3.2",
+    "dj-database-url>=3.0",
+    "gunicorn>=23",
+    "whitenoise>=6.9",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-django>=4.9",
+    "ruff>=0.11",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings_test"
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "DJ"]
+ignore = ["E501"]
